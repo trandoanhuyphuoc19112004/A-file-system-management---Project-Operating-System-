@@ -4,17 +4,27 @@
 #endif
 #include "Utils.h"
 
-void printHexTable(BYTE sector[512]) 
+void printHexTable(const BYTE *sector) 
 {
+  
     for (int i = 0; i < 512; i++) 
     {
-        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(sector[i]) << " ";
+        printf("%02X ", sector[i]);
         if ((i + 1) % 16 == 0)
             std::cout << std::endl;
     }
+
+ 
 }
 
-int getByteValues(BYTE sector[512], int offset, int bytesize)
+BYTE* clone_sector(const BYTE sector[512])
+{
+    BYTE* clone = new BYTE[512];
+    memcpy(clone, sector, 512); 
+    return clone; 
+}
+
+int getByteValues(BYTE *sector, int offset, int bytesize)
 {
     int value = 0; 
     memcpy(&value, sector + offset, bytesize);
@@ -53,7 +63,4 @@ int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512])
     }
 }
 
-bool isLittleEndian() {
-    uint32_t num = 1;
-    return (*reinterpret_cast<uint8_t*>(&num) == 1);
-}
+

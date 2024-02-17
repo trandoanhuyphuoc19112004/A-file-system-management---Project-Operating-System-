@@ -18,9 +18,11 @@ int main(int argc, char** argv)
 
 	std::getline(std::wcin, drivename); 
 	std::wstring path = L"\\\\.\\\\" + drivename + L":";
-
 	FAT32 drive(path.c_str()); 
+
+	// Print hex table 
 	printHexTable(drive.getBootSector()); 
+
 	std:: cout << "============================" << std::endl;
 	drive.getDiskInformation();
 }

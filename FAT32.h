@@ -12,6 +12,7 @@ private:
 	int _sectors_in_bootsector;
 	int _fat_num; 
 	int _entry_num;
+	int _sectors_of_RDET; 
 	int _sectors_per_volume;
 	int _volume_size;
 	int _fat_table_size;
