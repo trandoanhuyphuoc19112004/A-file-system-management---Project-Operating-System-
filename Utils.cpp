@@ -4,10 +4,10 @@
 #endif
 #include "Utils.h"
 
-void printHexTable(const BYTE *sector) 
+void printHexTable(const BYTE *sector, int size) 
 {
   
-    for (int i = 0; i < 512; i++) 
+    for (int i = 0; i < size; i++) 
     {
         printf("%02X ", sector[i]);
         if ((i + 1) % 16 == 0)
@@ -17,12 +17,6 @@ void printHexTable(const BYTE *sector)
  
 }
 
-BYTE* clone_sector(const BYTE sector[512])
-{
-    BYTE* clone = new BYTE[512];
-    memcpy(clone, sector, 512); 
-    return clone; 
-}
 
 int getByteValues(BYTE *sector, int offset, int bytesize)
 {
@@ -31,7 +25,9 @@ int getByteValues(BYTE *sector, int offset, int bytesize)
     return value; 
 }
 
-int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512])
+
+// This function read only 512 byte 
+int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
 {
     int retCode = 0;
     DWORD bytesRead;
@@ -59,8 +55,19 @@ int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512])
     }
     else
     {
-        printf("Success!\n");
+       // printf("Success!\n");
     }
 }
 
 
+std::string toString(BYTE* data, int offset, int number)
+{
+    char* tmp = new char[number + 1];
+    memcpy(tmp, data + offset, number);
+    std :: string s = "";
+    for (int i = 0; i < number; i++)
+        if (tmp[i] != 0x00 && tmp[i] != 0xFF)
+            s += tmp[i];
+    delete[] tmp; 
+    return s;
+}

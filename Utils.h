@@ -3,7 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
-void printHexTable(const BYTE* sector);
+#include <string>
+void printHexTable(const BYTE* sector, int size);
 int getByteValues(BYTE sector[512], int offset, int bytesize); 
-int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512]); 
-BYTE* clone_sector(const BYTE sector[512]); 
+int ReadSector(LPCWSTR  drive, int readPoint, BYTE*& sector); 
+std::string toString(BYTE* data, int offset, int number); 

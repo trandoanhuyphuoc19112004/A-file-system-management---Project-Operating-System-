@@ -1,7 +1,7 @@
 #pragma once
 #include "Utils.h"
 #include <Windows.h>
-
+#include <vector>
 class FAT32
 {
 private:
@@ -12,13 +12,13 @@ private:
 	int _sectors_in_bootsector;
 	int _fat_num; 
 	int _entry_num;
-	int _sectors_of_RDET; 
-	int _sectors_per_volume;
 	int _volume_size;
 	int _fat_table_size;
 	int _first_sector_of_data;
 
 	BYTE* BootSector; 
+	BYTE* rdet; 
+	BYTE* fat_table; 
 public:
 	~FAT32(); 
 	FAT32(LPCWSTR drivename);
@@ -29,6 +29,22 @@ public:
 	{
 		return BootSector; 
 	}
+public:
+	void getRDET(); 
 };
 
 
+struct FileProperties
+{
+	std::string filename; 
+	int filesize; 
+	int startcluster; 
+	int endcluster; 
+};
+
+struct FolderProperties
+{
+	std::string foldername; 
+	int startcluster; 
+	int endcluster; 
+};
