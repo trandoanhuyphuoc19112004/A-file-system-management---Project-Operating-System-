@@ -71,3 +71,4 @@ std::string toString(BYTE* data, int offset, int number)
     delete[] tmp; 
     return s;
 }
+
