@@ -34,17 +34,12 @@ public:
 };
 
 
-struct FileProperties
+struct ItemProperties
 {
-	std::string filename; 
-	int filesize; 
+	std::string name; 
+	int size; 
 	int startcluster; 
 	int endcluster; 
+	bool isFile; // true is file, false is folder 
 };
 
-struct FolderProperties
-{
-	std::string foldername; 
-	int startcluster; 
-	int endcluster; 
-};
