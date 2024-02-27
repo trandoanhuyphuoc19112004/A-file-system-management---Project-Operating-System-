@@ -2,6 +2,9 @@
 #include "Utils.h"
 #include <Windows.h>
 #include <vector>
+
+
+
 class FAT32
 {
 private:
@@ -17,8 +20,10 @@ private:
 	int _first_sector_of_data;
 
 	BYTE* BootSector; 
-	BYTE* rdet; 
+	BYTE* rdet;
 	BYTE* fat_table; 
+
+	
 public:
 	~FAT32(); 
 	FAT32(LPCWSTR drivename);
@@ -30,16 +35,14 @@ public:
 		return BootSector; 
 	}
 public:
-	void getRDET(); 
+	void read();
+	void readSDET(const ItemProperties& dir);
+	void readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector_index, int pointer);
+	void readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int pointer_of_fattable, int sector_index_of_fat_table);
+	void printFolder(std::vector<ItemProperties>& dir);
+	void readTXT(const ItemProperties& file);
 };
 
 
-struct ItemProperties
-{
-	std::string name; 
-	int size; 
-	int startcluster; 
-	int endcluster; 
-	bool isFile; // true is file, false is folder 
-};
+
 

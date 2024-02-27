@@ -28,5 +28,5 @@ int main(int argc, char** argv)
 	std:: cout << "============================" << std::endl;
 	drive.getDiskInformation();
 	system("Pause"); 
-	drive.getRDET(); 
+	drive.read(); 
 }
