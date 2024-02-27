@@ -33,7 +33,7 @@ int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
     DWORD bytesRead;
     HANDLE device = NULL;
 
-    device = CreateFile(drive,    // Drive to open
+    device = CreateFileW(drive,    // Drive to open
         GENERIC_READ,           // Access mode
         FILE_SHARE_READ | FILE_SHARE_WRITE,        // Share Mode
         NULL,                   // Security Descriptor
@@ -57,6 +57,7 @@ int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
     {
        // printf("Success!\n");
     }
+    return 0;
 }
 
 
