@@ -156,7 +156,7 @@ void FAT32::getRDET()
 								item.name = name;
 								name = " ";
 							}
-							item.size = getByteValues(rdet, pointer + 0x1C, 1);
+							item.size = getByteValues(rdet, pointer + 0x1C, 4);
 							item.startcluster = getByteValues(rdet, pointer + 0x1A, 2);
 							item.endcluster = 0;
 							list.push_back(item);
@@ -169,60 +169,61 @@ void FAT32::getRDET()
 
 	//read fat table second 
 	int idx = 0; 
-	int endcluster; 
+	int endcluster = 0 ; 
 	while (true)
 	{
 		system("cls");
+		
 		std::cout << "Sector index of fat table:" << sector_index_of_fat_table << std::endl;
 		ReadSector(_drive_name, offset_FatTable + sector_index_of_fat_table * 512, fat_table);
-		if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x00000000)
+		printHexTable(fat_table, 512);
+		std::cout << "===============" << std::endl;
+		
+		if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x0ffffff7)
+		{
+			std::cout << "fat table cannot be read" << std::endl;
+			break;
+		}
+		else if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x00000000)
 		{
 			break;
 		}
-		printHexTable(fat_table, 512);
-		std::cout << "===============" << std::endl;
-
-		do
+		else
 		{
-			if (pointer_of_fattable == 512)
+			pointer_of_fattable = list[idx].startcluster * 4 - sector_index_of_fat_table*512;
+			list[idx].endcluster = list[idx].startcluster;
+			if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x0fffffff)
 			{
-				pointer_of_fattable = 0;
-				sector_index_of_fat_table++;
-				break;
-			}
-
-			if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x0ffffff8 || getByteValues(fat_table, pointer_of_fattable, 4) == 0x0fffffff || getByteValues(fat_table, pointer_of_fattable, 4) == 0xffffffff)
-			{
-				pointer_of_fattable += 4;
-				continue;
-			}
-			else if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x0ffffff7)
-			{
-				std::cout << "fat table cannot be read" << std::endl;
-				break;
-			}
-			else if (getByteValues(fat_table, pointer_of_fattable, 4) == 0x00000000)
-			{
-				break;
+				pointer_of_fattable += 4; 
+				idx++;
 			}
 			else
 			{
-				while (getByteValues(fat_table, pointer_of_fattable, 4) != 0x0fffffff && pointer_of_fattable != 512)
+				while (getByteValues(fat_table, pointer_of_fattable, 4) != 0x0fffffff )
 				{
-					endcluster = getByteValues(fat_table, pointer_of_fattable, 4);
+					list[idx].endcluster++;
 					pointer_of_fattable += 4;
+					if (pointer_of_fattable == 512) 
+					{
+						pointer_of_fattable = 0;
+						sector_index_of_fat_table++;
+						ReadSector(_drive_name, offset_FatTable + sector_index_of_fat_table * 512, fat_table);
+					}
 				}
-			
-				list[idx].endcluster = endcluster - 1;
-				if (pointer_of_fattable != 512) 
+				if (pointer_of_fattable != 512)
+				{
 					idx++;
+				}
 			}
-		} while (true);
-
-		system("Pause"); 
+		}
+		if (idx == list.size())
+			break;
 	}
+	system("Pause");
+
 	
 	 //Print information about file
+	std::cout << "size:" << list.size() << std::endl; 
 	for (int i = 0; i < list.size(); i++)
 	{
 		std::cout << "======================" << std::endl; 
@@ -235,7 +236,10 @@ void FAT32::getRDET()
 		std::cout << "Size:" << list[i].size << std::endl;
 		std::cout << "The start cluster:" << list[i].startcluster << std::endl;
 		std::cout << "The end cluster:" << list[i].endcluster << std::endl; 
+		std::cout << "Sector range:" << std::endl; 
+
 	}
+	std::cout << std::endl; 
 	system("Pause");
 	system("cls");
 
