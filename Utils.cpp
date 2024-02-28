@@ -26,11 +26,15 @@ int64_t getByteValues(BYTE *sector, int offset, int bytesize)
 }
 
 // This function read only 512 byte 
-int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
+int ReadSector(LPCWSTR  drive, int64_t readPoint, BYTE *&sector)
 {
     int retCode = 0;
     DWORD bytesRead;
     HANDLE device = NULL;
+
+    LARGE_INTEGER li; 
+    li.QuadPart = readPoint; 
+    
 
     device = CreateFileW(drive,    // Drive to open
         GENERIC_READ,           // Access mode
@@ -46,7 +50,7 @@ int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
         return 1;
     }
 
-    SetFilePointer(device, readPoint, NULL, FILE_BEGIN);//Set a Point to Read
+    SetFilePointer(device, li.LowPart, &li.HighPart, FILE_BEGIN);//Set a Point to Read
 
     if (!ReadFile(device, sector, 512, &bytesRead, NULL))
     {
