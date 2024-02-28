@@ -2,7 +2,7 @@
 #include "Utils.h"
 #include <Windows.h>
 #include <vector>
-
+#include <cmath>
 class NTFS
 {
 private:

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 void printHexTable(const BYTE* sector, int size);
 int64_t getByteValues(BYTE sector[512], int offset, int bytesize);
