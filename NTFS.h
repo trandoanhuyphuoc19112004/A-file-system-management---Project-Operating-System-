@@ -5,7 +5,7 @@
 
 
 
-class FAT32
+class NTFS
 {
 private:
 	LPCWSTR _drive_name; 
@@ -25,8 +25,8 @@ private:
 
 	
 public:
-	~FAT32(); 
-	FAT32(LPCWSTR drivename);
+	~NTFS(); 
+	NTFS(LPCWSTR drivename);
 public:
 	void getDiskInformation(); 
 public:
@@ -42,7 +42,3 @@ public:
 	void printFolder(std::vector<ItemProperties>& dir);
 	void readTXT(const ItemProperties& file);
 };
-
-
-
-
