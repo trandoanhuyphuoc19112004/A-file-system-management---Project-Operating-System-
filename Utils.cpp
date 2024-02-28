@@ -18,13 +18,12 @@ void printHexTable(const BYTE *sector, int size)
 }
 
 
-int getByteValues(BYTE *sector, int offset, int bytesize)
+int64_t getByteValues(BYTE *sector, int offset, int bytesize)
 {
-    int value = 0; 
+    int64_t value = 0;
     memcpy(&value, sector + offset, bytesize);
     return value; 
 }
-
 
 // This function read only 512 byte 
 int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
@@ -55,7 +54,7 @@ int ReadSector(LPCWSTR  drive, int readPoint, BYTE *&sector)
     }
     else
     {
-       // printf("Success!\n");
+       printf("Success!\n");
     }
     return 0;
 }
@@ -71,4 +70,10 @@ std::string toString(BYTE* data, int offset, int number)
             s += tmp[i];
     delete[] tmp; 
     return s;
+}
+///////////////////////////////////////////
+
+void getBPB(BYTE* sector, BYTE* BPB, int offset, int bytesize)
+{
+    memcpy(BPB, sector + offset, bytesize);
 }

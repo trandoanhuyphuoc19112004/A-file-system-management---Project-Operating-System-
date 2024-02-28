@@ -3,7 +3,7 @@
 
 void FAT32::getDiskInformation()
 {
-	std::cout << "Some information about this removable device " << _drive_name << std::endl;
+	//std::cout << "Some information about this removable device " << _drive_name << std::endl;
 	std::cout << "Bytes per sector:" << _bytes_per_sector << std::endl;
 	std::cout << "Sectors per cluster:" << _sectors_per_cluster << std::endl; 
 	std::cout << "Sectors in bootsector:" << _sectors_in_bootsector << std::endl; 
@@ -11,7 +11,6 @@ void FAT32::getDiskInformation()
 	std::cout << "The number of fat:" << _fat_num << std::endl; 
 	std::cout << "Fat table size:" << _fat_table_size << std::endl;
 
-	std::cout << "The number of entries:" << _entry_num << std::endl; 
 	std::cout << "The sectors of RDETS:" << _first_sector_of_data << std::endl;
 
 	std::cout << "Volume size:" << _volume_size << std::endl; 
