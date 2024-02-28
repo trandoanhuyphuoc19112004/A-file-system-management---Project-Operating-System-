@@ -18,7 +18,7 @@ void printHexTable(const BYTE *sector, int size)
 }
 
 
-int getByteValues(BYTE *sector, int offset, int bytesize)
+int getByteValues(BYTE sector[512], int offset, int bytesize)
 {
     int value = 0; 
     memcpy(&value, sector + offset, bytesize);

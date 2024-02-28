@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	std::wstring path = L"\\\\.\\\\" + drivename + L":";
 	FAT32 drive(path.c_str()); */
 
-	std::wstring path = L"\\\\.\\\\D:";
+	std::wstring path = L"\\\\.\\\\E:";
 	FAT32 drive(path.c_str());
 	// Print hex table 
 	printHexTable(drive.getBootSector(), 512); 
