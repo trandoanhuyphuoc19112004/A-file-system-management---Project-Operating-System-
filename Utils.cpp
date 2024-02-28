@@ -72,9 +72,3 @@ std::string toString(BYTE* data, int offset, int number)
     delete[] tmp; 
     return s;
 }
-
-void deleteLL(Node* head) {
-    if(head == nullptr) return;
-    deleteLL(head->pNext);
-    delete head;
-}
