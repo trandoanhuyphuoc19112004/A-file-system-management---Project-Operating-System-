@@ -23,7 +23,8 @@ private:
 	BYTE* rdet;
 	BYTE* fat_table; 
 
-	
+	std::vector<ItemProperties> list;
+
 public:
 	~FAT32(); 
 	FAT32(LPCWSTR drivename);
@@ -39,8 +40,9 @@ public:
 	void readSDET(const ItemProperties& dir);
 	void readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector_index, int pointer);
 	void readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int pointer_of_fattable, int sector_index_of_fat_table);
-	void printFolder(std::vector<ItemProperties>& dir);
+	void printFolder();
 	void readTXT(const ItemProperties& file);
+	void printChosen();
 };
 
 
