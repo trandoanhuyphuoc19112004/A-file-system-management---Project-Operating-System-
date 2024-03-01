@@ -58,7 +58,7 @@ int ReadSector(LPCWSTR  drive, int64_t readPoint, BYTE *&sector)
     }
     else
     {
-       printf("Success!\n");
+    //    printf("Success!\n");
     }
     return 0;
 }
