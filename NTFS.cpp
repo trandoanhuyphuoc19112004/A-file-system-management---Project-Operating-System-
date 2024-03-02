@@ -25,12 +25,16 @@ NTFS::NTFS(LPCWSTR drivename)
 NTFS::~NTFS()
 {
 	delete[] BootSector;
-	delete[] MFT;
+	if (MFT != nullptr)
+	{
+		delete[] MFT;
+		MFT = nullptr;
+	}
 }
 
 void NTFS::getDiskInformation()
 {
-	//std::cout << "Some information about this removable device " << _drive_name << std::endl;
+	std::wcout << "Some information about this removable device " << _drive_name << std::endl;
 
 	std::cout << "Bytes per sector:" << _bytes_per_sector << std::endl;
 	std::cout << "Sectors per cluster:" << _sectors_per_cluster << std::endl;
@@ -49,8 +53,10 @@ int NTFS::read$MFT() {
 	readMFTEntry();
 	delete[] MFT;
 
-	int num_clusters = 64;
-	// for(int i = 0; i < _list[0].data_runs.size(); i++) num_clusters += _list[0].data_runs[i].num_clusters;
+	int num_clusters = 0;
+	 for(int i = 0; i < _list[0].data_runs.size(); i++) num_clusters += _list[0].data_runs[i].num_clusters;
+	 offsetMFT += 1024; 
+	 _root_reference = _list[0].parentReference; 
 	return num_clusters;
 }
 
@@ -61,8 +67,8 @@ void NTFS::read() {
 
 
 	// printHexTable(MFT, 1024);
+	offsetMFT = _begin_cluster_of_MFT * _bytes_per_sector * _sectors_per_cluster;
 	int total_sector = read$MFT() * _bytes_per_sector * _sectors_per_cluster;
-	offsetMFT = _begin_cluster_of_MFT * _bytes_per_sector * _sectors_per_cluster + 1024;
 	std::cout << total_sector << std::endl;
 	while (total_sector > 0) {
 		this->MFT = new BYTE[1024];
@@ -75,24 +81,35 @@ void NTFS::read() {
 		readMFTEntry();
 		offsetMFT += 1024;
 		total_sector -= 1024;
-		delete[] MFT;
+		if (MFT != nullptr)
+		{
+			delete[] MFT;
+			MFT = nullptr; 
+		}
 	}
-	printFileEntry();
+	
+	//printFileEntry();
+	//system("Pause"); 
+	std::cout << "Directory:" << std::endl; 
 	printDirectory();
+	system("Pause"); 
 }
 
 void NTFS::readMFTEntry() {
-	// std::cout << "ok" << std::endl;
 	if (toString(MFT, 0, 4) != "FILE") return;
 	if (getByteValues(MFT, 0x10, 2) == 0) return;
 	FileEntry fileEntry;
+	fileEntry.parentReference = 5; 
 	if (getByteValues(MFT, 0x16, 2) == 0x01) fileEntry.isDirectory = false;
 	else if (getByteValues(MFT, 0x16, 2) == 0x03) fileEntry.isDirectory = true;
 	else return;
-	// std::cout << "ok" << std::endl;
+	
 	int startAtribute = getByteValues(MFT, 0x14, 2);
 	fileEntry.fileReference = getByteValues(MFT, 0x2C, 4);
-	while (getByteValues(MFT, startAtribute, 4) != 0xffffffff) {
+
+	while (getByteValues(MFT, startAtribute, 4) != 0xffffffff) 
+	{
+		
 		int attributeSize = getByteValues(MFT, startAtribute + 4, 4);
 		int startContent = getByteValues(MFT, startAtribute + 20, 2);
 		if (getByteValues(MFT, startAtribute, 4) == 0x10) { //$STANDARD_INFORMATION
@@ -107,6 +124,7 @@ void NTFS::readMFTEntry() {
 		else if (getByteValues(MFT, startAtribute, 4) == 0x80) { //$DATA
 			fileEntry.isResident = getByteValues(MFT, startAtribute + 8, 1) == 0;
 			if (fileEntry.isResident) {
+			
 				int contentLength = getByteValues(MFT, startAtribute + 16, 4);
 				int i = 0;
 				while (contentLength > 0) {
@@ -132,6 +150,7 @@ void NTFS::readMFTEntry() {
 
 		startAtribute += attributeSize;
 	}
+	
 	EntryMap.insert({ fileEntry.fileReference, _list.size() });
 	_list.push_back(fileEntry);
 	if (_dir_list.size() == 0 || searchDir(0, _dir_list.size() - 1, fileEntry.parentReference) == -1) {
@@ -139,21 +158,23 @@ void NTFS::readMFTEntry() {
 		dir.reference = fileEntry.parentReference;
 		_dir_list.push_back(dir);
 	}
-	_dir_list[searchDir(0, _dir_list.size() - 1, fileEntry.parentReference)].children.push_back(fileEntry.fileReference);
+	int number = searchDir(0, _dir_list.size() - 1, fileEntry.parentReference);
+	_dir_list[number].children.push_back(fileEntry.fileReference);
 	if (fileEntry.isDirectory) {
 		if (_dir_list.size() > 0) {
 			if (searchDir(0, _dir_list.size() - 1, fileEntry.fileReference) == -1) {
 				Directory dir;
 				dir.reference = fileEntry.fileReference;
 				_dir_list.push_back(dir);
+				
 			}
 		}
 	}
-
 }
 
 
-int NTFS::searchDir(int left, int right, int ref) {
+int NTFS::searchDir(int left, int right, int ref) 
+{
 	if (left > right) return -1;
 	int mid = (left + right) / 2;
 	if (_dir_list[mid].reference == ref) return mid;
@@ -190,13 +211,30 @@ void NTFS::printFileEntry() {
 	}
 }
 void NTFS::printDirectory() {
-	for (int i = 0; i < _dir_list.size(); i++) {
-		// if(_list[i].flag == 2 || _list[i].flag == 6) continue;
-		std::cout << "=====================" << std::endl;
-		std::cout << "Dir: " << _dir_list[i].reference << std::endl;
-		for (int j = 0; j < _dir_list[i].children.size(); j++) {
-			std::cout << "Ref: " << _dir_list[i].children[j] << std::endl;
+	int root = searchDir(0, _dir_list.size() - 1, _root_reference);
+	std::cout << "Root:" << root << std::endl; 
 
-		}
+	//for (int i = 0; i < _dir_list.size(); i++) {
+	//	// if(_list[i].flag == 2 || _list[i].flag == 6) continue;
+	//	std::cout << "=====================" << std::endl;
+	//	std::cout << "Dir: " << _dir_list[i].reference << std::endl;
+	//	for (int j = 0; j < _dir_list[i].children.size(); j++) {
+	//		std::cout << "Ref: " << _dir_list[i].children[j] << std::endl;
+
+	//	}
+	//}
+
+	for (int i = 0; i < _dir_list[root].children.size(); i++)
+	{
+		if (_list[EntryMap[_dir_list[root].children[i]]].flag == 2 || _list[EntryMap[_dir_list[root].children[i]]].flag == 6) continue;
+		std::cout << "=====================" << std::endl;
+		std::cout << "Ref: " << _dir_list[root].children[i] << std::endl;
+		std::cout << "Name: " << _list[EntryMap[_dir_list[root].children[i]]].filename << std::endl;
+		std::cout << "Type: " << (_list[EntryMap[_dir_list[root].children[i]]].isDirectory ? "directory" : "file") << std::endl;
+		std::cout << "Flag: " << _list[EntryMap[_dir_list[root].children[i]]].flag << std::endl;
+		std::cout << "File Ref: " << _list[EntryMap[_dir_list[root].children[i]]].fileReference << std::endl;
+		std::cout << "Parent: " << _list[EntryMap[_dir_list[root].children[i]]].parentReference << std::endl;
+		std::cout << "Resident: " << _list[EntryMap[_dir_list[root].children[i]]].isResident << std::endl;
 	}
+
 }

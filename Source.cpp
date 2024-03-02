@@ -22,21 +22,25 @@ int main(int argc, char** argv)
 	FAT32 drive(path.c_str()); */
 
 	std::wstring path = L"\\\\.\\\\F:";
-	FAT32 drive(path.c_str());
-	//Print hex table 
-	printHexTable(drive.getBootSector(), 512); 
+	/*fat32 drive(path.c_str());
+	print hex table 
+	printhextable(drive.getbootsector(), 512); 
 
 	std:: cout << "============================" << std::endl;
-	drive.getDiskInformation();
-	system("Pause"); 
+	drive.getdiskinformation();
+	system("pause"); 
 	drive.read(); 
 
-	vector<ItemProperties> list = drive.getList(); 
+	vector<itemproperties> list = drive.getlist(); 
 	if (list.size() == 0)
 	{
-		std::cout << "No item in drive" << std::endl; 
+		std::cout << "no item in drive" << std::endl; 
 		exit(0); 
 	}
-	else drive.printChosen(list);
+	else drive.printchosen(list);*/
+
+	NTFS drive(path.c_str()); 
+	drive.getDiskInformation(); 
+	drive.read(); 
 	
 }

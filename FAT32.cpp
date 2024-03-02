@@ -330,7 +330,9 @@ void FAT32::printChosen(std::vector<ItemProperties> List) {
 		else
 		{
 			//system("cls"); 
+
 			readSDET(List[choice - 1], innerlist); 
+			
 		}
 		printChosen(List);
 	}
