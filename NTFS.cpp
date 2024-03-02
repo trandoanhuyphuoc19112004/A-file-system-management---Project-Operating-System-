@@ -17,7 +17,7 @@ NTFS::NTFS(LPCWSTR drivename)
 
 	signed char number = 0;
 	memcpy(&number, BootSector + 0x40, 1);
-	this->_MFT_entry_size = int(number);  // If size < 0, the formula is size = 2 ^ -size 
+	this->_MFT_entry_size = int(number);  // If size < 0, the formula is size = 2 ^ abs size 
 	if (_MFT_entry_size < 0)
 		_MFT_entry_size = pow(2, abs(_MFT_entry_size));
 }
@@ -65,8 +65,6 @@ void NTFS::read() {
 	std::cout << "======================" << std::endl;
 	std::cout << "Some information about files or folders" << std::endl;
 
-
-	// printHexTable(MFT, 1024);
 	offsetMFT = _begin_cluster_of_MFT * _bytes_per_sector * _sectors_per_cluster;
 	int total_sector = read$MFT() * _bytes_per_sector * _sectors_per_cluster;
 	std::cout << total_sector << std::endl;
@@ -76,8 +74,7 @@ void NTFS::read() {
 		BYTE* lastEntry = new BYTE[512];
 		ReadSector(_drive_name, offsetMFT + 512, lastEntry);
 		memcpy(MFT + 512, lastEntry, 512);
-		delete lastEntry;
-		// printHexTable(MFT, 1024);
+		delete lastEntry; 
 		readMFTEntry();
 		offsetMFT += 1024;
 		total_sector -= 1024;
@@ -88,10 +85,7 @@ void NTFS::read() {
 		}
 	}
 	
-	//printFileEntry();
-	//system("Pause"); 
-	std::cout << "Directory:" << std::endl; 
-	printDirectory();
+	printDirectory(_root_reference);
 	system("Pause"); 
 }
 
@@ -182,7 +176,9 @@ int NTFS::searchDir(int left, int right, int ref)
 	else return searchDir(mid + 1, right, ref);
 }
 
-void NTFS::printNonResident(std::vector<DataRun>& data) {
+void NTFS::printNonResident(std::vector<DataRun>& data) 
+{
+	system("cls"); 
 	for (int i = 0; i < data.size(); i++) {
 		int sector_numnber = data[i].num_clusters * _sectors_per_cluster;
 		int j = 0;
@@ -210,24 +206,21 @@ void NTFS::printFileEntry() {
 		std::cout << "Resident: " << _list[i].isResident << std::endl;
 	}
 }
-void NTFS::printDirectory() {
-	int root = searchDir(0, _dir_list.size() - 1, _root_reference);
+void NTFS::printDirectory(int rootreference) {
+	system("cls"); 
+	int root = searchDir(0, _dir_list.size() - 1, rootreference);
 	std::cout << "Root:" << root << std::endl; 
+	std::wcout << "Choose the folder to view item in this drive:" << _drive_name << std::endl;
+	std::cout << "Dont choose the folder name . or .." << std::endl;
+	std::cout << "Choose the file TXT you want to dump! " << std::endl;
 
-	//for (int i = 0; i < _dir_list.size(); i++) {
-	//	// if(_list[i].flag == 2 || _list[i].flag == 6) continue;
-	//	std::cout << "=====================" << std::endl;
-	//	std::cout << "Dir: " << _dir_list[i].reference << std::endl;
-	//	for (int j = 0; j < _dir_list[i].children.size(); j++) {
-	//		std::cout << "Ref: " << _dir_list[i].children[j] << std::endl;
-
-	//	}
-	//}
-
+	int j = 0;
+	std::map<int, int> ListMap; 
 	for (int i = 0; i < _dir_list[root].children.size(); i++)
 	{
 		if (_list[EntryMap[_dir_list[root].children[i]]].flag == 2 || _list[EntryMap[_dir_list[root].children[i]]].flag == 6) continue;
 		std::cout << "=====================" << std::endl;
+		std::cout << "No:" << j + 1 << std::endl; 
 		std::cout << "Ref: " << _dir_list[root].children[i] << std::endl;
 		std::cout << "Name: " << _list[EntryMap[_dir_list[root].children[i]]].filename << std::endl;
 		std::cout << "Type: " << (_list[EntryMap[_dir_list[root].children[i]]].isDirectory ? "directory" : "file") << std::endl;
@@ -235,6 +228,50 @@ void NTFS::printDirectory() {
 		std::cout << "File Ref: " << _list[EntryMap[_dir_list[root].children[i]]].fileReference << std::endl;
 		std::cout << "Parent: " << _list[EntryMap[_dir_list[root].children[i]]].parentReference << std::endl;
 		std::cout << "Resident: " << _list[EntryMap[_dir_list[root].children[i]]].isResident << std::endl;
+		j++; 
+		ListMap[j] = EntryMap[_dir_list[root].children[i]]; 
+
 	}
 
+	int choice = -1;
+
+	std::cout << "Your choice:";
+	std::cin >> choice;
+	if (choice < 0 || choice > ListMap.rbegin()->first)
+	{
+		std::cout << "Something Wrong!!!" << std::endl;
+		system("pause");
+		printDirectory(rootreference);
+	}
+	else if (choice > 0 && choice <= ListMap.rbegin()->first)
+	{
+		int number = ListMap[choice];
+		if (_list[number].isDirectory != true)
+		{
+			std::size_t dotPosition = _list[number].filename.find_last_of(".");
+			std::string fileExtension = _list[number].filename.substr(dotPosition + 1, 3);
+			if ((fileExtension == "txt" || fileExtension == "TXT") and _list[number].isResident == true)
+			{
+				system("cls"); 
+				std::cout << _list[number].data << std::endl;
+				system("Pause"); 
+			}
+			else if ((fileExtension == "txt" || fileExtension == "TXT") and _list[number].isResident == false)
+			{
+				printNonResident(_list[number].data_runs);
+				system("Pause");
+			}
+			else
+			{
+				std::cout << "This file need a special software to read" << std::endl;
+				system("Pause");
+			}
+		}
+		else
+		{
+			printDirectory(_list[number].fileReference); 
+		}
+		printDirectory(rootreference);
+	}
+	else if (choice == 0) exit; 
 }

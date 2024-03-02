@@ -14,33 +14,45 @@
 int main(int argc, char** argv)
 {
 	std::wstring drivename; 
+	BYTE* bootsector;
+	bootsector = new BYTE[512]; 
 	std::cout << "AN FILE SYSTEM MANAGEMENT" << std::endl; 
+
 	/*std::cout << "Enter your removable disks:"; 
 
 	std::getline(std::wcin, drivename); 
 	std::wstring path = L"\\\\.\\\\" + drivename + L":";
 	FAT32 drive(path.c_str()); */
 
+	std::string formatname; 
 	std::wstring path = L"\\\\.\\\\F:";
-	/*fat32 drive(path.c_str());
-	print hex table 
-	printhextable(drive.getbootsector(), 512); 
+	ReadSector(path.c_str(), 0, bootsector); 
+	formatname = toString(bootsector, 0x52, 8);
 
-	std:: cout << "============================" << std::endl;
-	drive.getdiskinformation();
-	system("pause"); 
-	drive.read(); 
-
-	vector<itemproperties> list = drive.getlist(); 
-	if (list.size() == 0)
+	if (formatname == "FAT32   ") //FAT32
 	{
-		std::cout << "no item in drive" << std::endl; 
-		exit(0); 
+		FAT32 drive(path.c_str());
+		//print hex table
+		printHexTable(drive.getBootSector(), 512);
+		std::cout << "============================" << std::endl;
+		drive.getDiskInformation();
+		system("Pause");
+		drive.read();
+		vector<ItemProperties> list = drive.getList();
+		if (list.size() == 0)
+		{
+			std::cout << "no item in drive" << std::endl;
+			system("Pause");
+			exit(0);
+		}
+		else drive.printChosen(list);
 	}
-	else drive.printchosen(list);*/
-
-	NTFS drive(path.c_str()); 
-	drive.getDiskInformation(); 
-	drive.read(); 
-	
+	else //NTFS 
+	{
+		NTFS drive(path.c_str()); 
+		drive.getDiskInformation();
+		system("Pause"); 
+		drive.read(); 
+	}
+	delete[] bootsector; 
 }
