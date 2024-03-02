@@ -39,6 +39,21 @@ void NTFS::getDiskInformation()
 	std::cout << "MFT entry size:" << _MFT_entry_size << std::endl; 
 }
 
+int NTFS::read$MFT() {
+	this->MFT = new BYTE[1024]; 
+	ReadSector(_drive_name, offsetMFT, MFT);
+	BYTE* lastEntry = new BYTE[512];
+	ReadSector(_drive_name, offsetMFT+512, lastEntry);
+	memcpy(MFT+512, lastEntry, 512);
+	delete lastEntry;
+	readMFTEntry();
+	delete[] MFT;
+	
+	int num_clusters = 64;
+	// for(int i = 0; i < _list[0].data_runs.size(); i++) num_clusters += _list[0].data_runs[i].num_clusters;
+	return num_clusters;
+}
+
 void NTFS::read() {
 	system("cls");
 	std::cout << "======================" << std::endl;
@@ -51,23 +66,73 @@ void NTFS::read() {
 	//this->rdet = new BYTE[512];
 	//this->fat_table = new BYTE[512];
 
-	//int offset_FatTable = _sectors_in_bootsector * _bytes_per_sector;
+		startAtribute += attributeSize;
+	}
+	EntryMap.insert({fileEntry.fileReference, _list.size()});
+	_list.push_back(fileEntry);
+	if(_dir_list.size() == 0 || searchDir(0, _dir_list.size()-1,fileEntry.parentReference) == -1) {
+		Directory dir;
+		dir.reference = fileEntry.parentReference;
+		_dir_list.push_back(dir);
+	}
+	_dir_list[searchDir(0, _dir_list.size()-1,fileEntry.parentReference)].children.push_back(fileEntry.fileReference);
+	if(fileEntry.isDirectory) {
+		if(_dir_list.size() > 0) {
+			if(searchDir(0, _dir_list.size()-1, fileEntry.fileReference) == -1) {
+				Directory dir;
+				dir.reference = fileEntry.fileReference;
+				_dir_list.push_back(dir);
+			}
+		}
+	}
+	
+}
 
 
-	//int offsetRDET = (_sectors_in_bootsector * _bytes_per_sector + 2 * _fat_table_size * _bytes_per_sector);
+int NTFS::searchDir(int left, int right, int ref) {
+	if(left > right) return -1;
+	int mid = (left + right) / 2;
+	if(_dir_list[mid].reference == ref) return mid;
+	else if(_dir_list[mid].reference > ref) return searchDir(left, mid-1, ref);
+	else return searchDir(mid+1, right, ref);
+}
 
-	//int pointer = 0;
-	//int sector_index = 0;
+void NTFS::printNonResident(std::vector<DataRun>& data) {
+	for(int i = 0; i < data.size(); i++) {
+		int sector_numnber = data[i].num_clusters*_sectors_per_cluster;
+		int j = 0;
+		while (sector_numnber > 0) {
+			BYTE* sector = new BYTE[512];
+			ReadSector(_drive_name, data[i].startCluster*_sectors_per_cluster*_bytes_per_sector+j*_bytes_per_sector, sector);
+			std::cout << toString(sector, 0, 512) << std::endl;
+			delete[] sector;
+			j++;
+			sector_numnber--;
+		}
+	}
+}
 
-	//std::vector<ItemProperties> list;
+void NTFS::printFileEntry() {
+	for(int i = 0; i < _list.size(); i++) {
+		// if(_list[i].flag == 2 || _list[i].flag == 6) continue;
+		std::cout << "=====================" << std::endl;
+		std::cout << "No: " << i<< std::endl;
+		std::cout << "Name: " << _list[i].filename << std::endl;
+		std::cout << "Type: " << (_list[i].isDirectory ? "directory" : "file") << std::endl;
+		std::cout << "Flag: " << _list[i].flag <<std::endl;
+		std::cout << "File Ref: " << _list[i].fileReference <<std::endl;
+		std::cout << "Parent: " << _list[i].parentReference << std::endl;
+		std::cout << "Resident: " << _list[i].isResident << std::endl;
+	}
+}
+void NTFS::printDirectory() {
+	for(int i = 0; i < _dir_list.size(); i++) {
+		// if(_list[i].flag == 2 || _list[i].flag == 6) continue;
+		std::cout << "=====================" << std::endl;
+		std::cout << "Dir: " << _dir_list[i].reference << std::endl;
+		for(int j = 0; j < _dir_list[i].children.size(); j++) {
+			std::cout << "Ref: " << _dir_list[i].children[j]<< std::endl;
 
-	//int pointer_of_fattable = 0;
-	//int sector_index_of_fat_table = 0;
-
-	//readDIR(list, offsetRDET, sector_index, pointer);
-	//readFAT(list, offset_FatTable, pointer_of_fattable, sector_index_of_fat_table);
-	//printFolder(list);
-	//system("cls");
-	//readTXT(list[0]);
-	// system("cls");
+		}
+	}
 }

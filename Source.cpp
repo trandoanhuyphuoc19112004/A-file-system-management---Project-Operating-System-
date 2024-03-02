@@ -30,4 +30,7 @@ int main(int argc, char** argv)
 	drive.getDiskInformation();
 	system("Pause"); 
 	drive.read(); 
+	///////
+	// drive.printChosen();
+	
 }
