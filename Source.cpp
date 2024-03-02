@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 	FAT32 drive(path.c_str()); */
 
 	std::wstring path = L"\\\\.\\\\F:";
-	NTFS drive(path.c_str());
+	FAT32 drive(path.c_str());
 	//Print hex table 
 	printHexTable(drive.getBootSector(), 512); 
 

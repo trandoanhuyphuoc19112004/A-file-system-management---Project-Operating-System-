@@ -76,6 +76,7 @@ void FAT32::read() {
 	printFolder(list);
 	system("cls");
 	readTXT(list[0]);
+	readSDET(list[6]); 
 	// system("cls");
 }
 
@@ -106,7 +107,6 @@ void FAT32::readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector
 				pointer += 32;
 				continue;
 			}
-			std::cout << pointer << std::endl;
 			if (getByteValues(rdet, pointer, 1) == 0x00)
 				break;
 
@@ -132,9 +132,7 @@ void FAT32::readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector
 				}
 				item.size = 0;
 				item.clusters.push_back(getByteValues(rdet, pointer + 0x1A, 2));
-				std::cout << "ok1" << std::endl;
 				list.push_back(item);
-				std::cout << "ok2" << std::endl;
 				
 			}
 
@@ -170,11 +168,9 @@ void FAT32::readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector
 			}
 
 			pointer += 32;
-			std::cout << "ok" << std::endl;
 
 		}
 	}
-	std::cout << "ok" << std::endl;
 }
 
 void FAT32::readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int pointer_of_fattable, int sector_index_of_fat_table) {
@@ -213,7 +209,6 @@ void FAT32::readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int 
 				{
 					list[idx].clusters.push_back(getByteValues(fat_table, pointer_of_fattable, 4));
 					pointer_of_fattable = list[idx].clusters[++cluster_id]*4 - sector_index_of_fat_table*512;
-					std::cout << "cluster: " << cluster_id << " " << list[idx].clusters[cluster_id] << std::endl;
 					if (pointer_of_fattable == 512) 
 					{
 						pointer_of_fattable = 0;

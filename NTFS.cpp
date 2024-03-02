@@ -46,7 +46,7 @@ void NTFS::read() {
 
 	this->MFT = new BYTE[512]; 
 	int64_t offsetMFT = _begin_cluster_of_MFT * _bytes_per_sector * _sectors_per_cluster; 
-	ReadSector(_drive_name, offsetMFT, MFT); 
+	ReadSector(_drive_name, 512, MFT); 
 	printHexTable(MFT, 512); 
 	//this->rdet = new BYTE[512];
 	//this->fat_table = new BYTE[512];
