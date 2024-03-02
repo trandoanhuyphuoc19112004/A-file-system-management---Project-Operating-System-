@@ -72,11 +72,13 @@ void FAT32::read() {
 	int sector_index_of_fat_table = 0;
 
 	readDIR(this->list, offsetRDET, sector_index, pointer);
-	readFAT(this->list, offset_FatTable, pointer_of_fattable, sector_index_of_fat_table);
-	printFolder();
-	system("cls");
-	readTXT(list[0]);
-	readSDET(list[6]); 
+	if (list.size() != 0)
+	{
+		readFAT(this->list, offset_FatTable, pointer_of_fattable, sector_index_of_fat_table);
+	}
+	else std::cout << "No item" << std::endl; 
+	//readTXT(list[0]);
+	//readSDET(list[6]); 
 	// system("cls");
 }
 
@@ -88,7 +90,7 @@ void FAT32::readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector
 	while (true)
 	{
 		ReadSector(_drive_name, offsetDIR + sector_index * 512, rdet);
-		printHexTable(rdet, 512);
+		//printHexTable(rdet, 512);
 		if (getByteValues(rdet, pointer + 0x0B, 1) == 0x00)
 			break;
 		while (true)
@@ -123,7 +125,6 @@ void FAT32::readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector
 				if (name == " ")
 				{
 					item.name = toString(rdet, pointer, 8);
-					// std::cout << item.name << std::endl;
 				}
 				else
 				{
@@ -141,7 +142,6 @@ void FAT32::readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector
 				if (name == " ")
 				{
 					item.name = toString(rdet, pointer, 8);
-					// std::cout << item.name << std::endl;
 				}
 				else
 				{
@@ -195,7 +195,12 @@ void FAT32::readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int 
 		{
 			break;
 		}
-		else
+		else if (list[idx].size == 0)
+		{
+			idx++; 
+			break; 
+		}
+		else 
 		{
 			int cluster_id = 0;
 			pointer_of_fattable = list[idx].clusters[cluster_id]* 4 - sector_index_of_fat_table*512;
@@ -225,25 +230,23 @@ void FAT32::readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int 
 }
 
 
-void FAT32::printFolder() {
-	for (int i = 0; i < this->list.size(); i++)
+void FAT32::printFolder(std::vector<ItemProperties>& List) {
+	for (int i = 0; i < List.size(); i++)
 	{
 		std::cout << "======================" << std::endl; 
 		std::cout << "No:" << i + 1 << std::endl; 
-		if (this->list[i].isFile == true)
+		if (List[i].isFile == true)
 			std::cout << "Type: File" << std::endl;
 		else
 			std::cout << "Type:Folder" << std::endl;
-		std::cout << "Name:" << this->list[i].name << std::endl;
-		std::cout << "Size:" << this->list[i].size << std::endl;
-		std::cout << "The start cluster:" << this->list[i].clusters[0] << std::endl;
-		std::cout << "Sector range:" << std::endl;
+		std::cout << "Name:" << List[i].name << std::endl;
+		std::cout << "Size:" << List[i].size << std::endl;
+		std::cout << "The start cluster:" << List[i].clusters[0] << std::endl;
 	}
 	std::cout << std::endl; 
-	system("Pause");
 }
 
-void FAT32::readSDET(const ItemProperties& dir) {
+void FAT32::readSDET(const ItemProperties& dir, std::vector<ItemProperties> InnerList) {
 	system("cls");
 	std::cout << "======================" << std::endl;
 	std::cout << "Some information about files or folders in " << dir.name << std::endl;
@@ -261,10 +264,11 @@ void FAT32::readSDET(const ItemProperties& dir) {
 	int pointer_of_fattable = 0;
 	int sector_index_of_fat_table = 0;
 
-	readDIR(this->list, offsetDIR, sector_index, pointer);
-	readFAT(this->list, offset_FatTable, pointer_of_fattable, sector_index_of_fat_table);
-	printFolder();
-	system("cls");
+	readDIR(InnerList, offsetDIR, sector_index, pointer);
+	readFAT(InnerList, offset_FatTable, pointer_of_fattable, sector_index_of_fat_table);
+	printChosen(InnerList);
+	InnerList.clear();
+	
 }
 
 void FAT32::readTXT(const ItemProperties& file) {
@@ -288,39 +292,47 @@ void FAT32::readTXT(const ItemProperties& file) {
 	std::cout << data << std::endl;
 	system("pause");
 }
-void FAT32::printChosen() {
+
+void FAT32::printChosen(std::vector<ItemProperties> List) {
 	system("cls");
-	std::cout << "Choose the file you want to read information!! " << std::endl;
-	for (int i = 0; i < this->list.size(); i++)
-	{
-		std::cout << "======================" << std::endl;
-		std::cout << "No:" << i + 1 << std::endl;
-		if (this->list[i].isFile == true)
-			std::cout << "Type: File" << std::endl;
-		else
-			std::cout << "Type:Folder" << std::endl;
-	}
-	std::cout << std::endl;
+	std::wcout << "Choose the folder to view item in this drive:" << _drive_name << std::endl; 
+	std::cout << "Dont choose the folder name . or .." << std::endl; 
+	std::cout << "Choose the file TXT you want to dump! " << std::endl;
+	printFolder(List); 
 
 	int choice = -1;
 
+	std::cout << "Your choice:"; 
 	std::cin >> choice;
-	if (choice < 0 || choice > list.size() + 1) {
+	if (choice < 0 || choice > List.size() + 1)
+	{
 		std::cout << "Something Wrong!!!" << std::endl;
 		system("pause");
-		printChosen();
+		printChosen(List);
 	}
-	else if (choice > 0 && choice <= list.size() + 1) {
-		if (this->list[choice - 1].isFile == true)
-			std::cout << "Type: File" << std::endl;
+	else if (choice > 0 && choice <= List.size() + 1)
+	{   
+		if (List[choice - 1].isFile == true)
+		{
+			std::size_t dotPosition = List[choice - 1].name.find_last_of(".");
+			std::string fileExtension = List[choice - 1].name.substr(dotPosition + 1, 3);
+			if (fileExtension == "txt" || fileExtension == "TXT")
+			{
+				readTXT(List[choice - 1]);
+
+			}
+			else
+			{
+				std::cout << "This file need a special software to read" << std::endl;
+				system("Pause"); 
+			}
+		}
 		else
-			std::cout << "Type:Folder" << std::endl;
-		std::cout << "Name:" << this->list[choice - 1].name << std::endl;
-		std::cout << "Size:" << this->list[choice - 1].size << std::endl;
-		std::cout << "The start cluster:" << this->list[choice - 1].clusters[0] << std::endl;
-		std::cout << "Sector range:" << std::endl;
-		system("pause");
-		printChosen();
+		{
+			//system("cls"); 
+			readSDET(List[choice - 1], innerlist); 
+		}
+		printChosen(List);
 	}
 	else if (choice == 0) exit;
 }

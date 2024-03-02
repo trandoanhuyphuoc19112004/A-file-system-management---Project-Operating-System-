@@ -23,7 +23,8 @@ private:
 	BYTE* rdet;
 	BYTE* fat_table; 
 
-	std::vector<ItemProperties> list;
+	std::vector<ItemProperties>  list;
+	std::vector<ItemProperties> innerlist; 
 
 public:
 	~FAT32(); 
@@ -36,13 +37,18 @@ public:
 		return BootSector;
 	}
 public:
+	vector<ItemProperties> getList()
+	{
+		return list; 
+	}
+public:
 	void read();
-	void readSDET(const ItemProperties& dir);
+	void readSDET(const ItemProperties& dir, std::vector<ItemProperties> InnerList);
 	void readDIR(std::vector<ItemProperties>& list, int offsetDIR, int sector_index, int pointer);
 	void readFAT(std::vector<ItemProperties>& list, int offset_FatTable, int pointer_of_fattable, int sector_index_of_fat_table);
-	void printFolder();
+	void printFolder(std::vector<ItemProperties>& List);
 	void readTXT(const ItemProperties& file);
-	void printChosen();
+	void printChosen(std::vector<ItemProperties> List);
 };
 
 

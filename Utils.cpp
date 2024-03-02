@@ -58,7 +58,7 @@ int ReadSector(LPCWSTR  drive, int64_t readPoint, BYTE *&sector)
     }
     else
     {
-    //    printf("Success!\n");
+         printf("Success!\n");
     }
     return 0;
 }
@@ -75,9 +75,12 @@ std::string toString(BYTE* data, int offset, int number)
     delete[] tmp; 
     return s;
 }
+
+
 ///////////////////////////////////////////
 
 void getBPB(BYTE* sector, BYTE* BPB, int offset, int bytesize)
 {
     memcpy(BPB, sector + offset, bytesize);
 }
+

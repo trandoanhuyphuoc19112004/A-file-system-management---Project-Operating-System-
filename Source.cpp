@@ -30,7 +30,13 @@ int main(int argc, char** argv)
 	drive.getDiskInformation();
 	system("Pause"); 
 	drive.read(); 
-	///////
-	// drive.printChosen();
+
+	vector<ItemProperties> list = drive.getList(); 
+	if (list.size() == 0)
+	{
+		std::cout << "No item in drive" << std::endl; 
+		exit(0); 
+	}
+	else drive.printChosen(list);
 	
 }

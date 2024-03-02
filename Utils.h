@@ -14,6 +14,7 @@ int ReadSector(LPCWSTR  drive, int64_t readPoint, BYTE*& sector);
 std::string toString(BYTE* data, int offset, int number);
 void getBPB(BYTE* sector, BYTE* BPB, int offset, int bytesize); 
 
+
 struct ItemProperties
 {
 	std::string name;
