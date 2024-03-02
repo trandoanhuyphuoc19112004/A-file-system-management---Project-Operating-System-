@@ -18,14 +18,12 @@ int main(int argc, char** argv)
 	bootsector = new BYTE[512]; 
 	std::cout << "AN FILE SYSTEM MANAGEMENT" << std::endl; 
 
-	/*std::cout << "Enter your removable disks:"; 
+	std::cout << "Enter your removable disks:"; 
 
 	std::getline(std::wcin, drivename); 
-	std::wstring path = L"\\\\.\\\\" + drivename + L":";
-	FAT32 drive(path.c_str()); */
+	std::wstring path = L"\\\\.\\\\" + drivename + L":"; 
 
 	std::string formatname; 
-	std::wstring path = L"\\\\.\\\\F:";
 	ReadSector(path.c_str(), 0, bootsector); 
 	formatname = toString(bootsector, 0x52, 8);
 
