@@ -94,7 +94,7 @@ void NTFS::read() {
 			MFT = nullptr; 
 		}
 	}
-	
+	printFileEntry();
 	printDirectory(_root_reference);
 	system("Pause"); 
 }
