@@ -49,6 +49,8 @@ public:
 	void printFileEntry();
 	void printNonResident(std::vector<DataRun>& data);
 	int read$MFT();
+	void readEntry(int64_t offsetMFT);
+	void addDir(Directory dir);
 	int searchDir(int left, int right, int ref);
 	void printDirectory(int rootreference);
 	void printChosen(std::vector<ItemProperties> List);
