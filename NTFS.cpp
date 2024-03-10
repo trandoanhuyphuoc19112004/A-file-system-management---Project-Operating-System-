@@ -44,12 +44,7 @@ void NTFS::getDiskInformation()
 }
 
 int NTFS::read$MFT() {
-	this->MFT = new BYTE[1024];
-	ReadSector(_drive_name, offsetMFT, MFT);
-	BYTE* lastEntry = new BYTE[512];
-	ReadSector(_drive_name, offsetMFT + 512, lastEntry);
-	memcpy(MFT + 512, lastEntry, 512);
-	delete lastEntry;
+	readEntry(offsetMFT);
 	readMFTEntry();
 	delete[] MFT;
 
