@@ -50,7 +50,7 @@ public:
 	void printNonResident(std::vector<DataRun>& data);
 	int read$MFT();
 	int searchDir(int left, int right, int ref);
-	void addDir();
+	void addDir(Directory dir);
 	void readEntry(int offsetMFT);
 	void printDirectory(int rootreference);
 	void printChosen(std::vector<ItemProperties> List);
