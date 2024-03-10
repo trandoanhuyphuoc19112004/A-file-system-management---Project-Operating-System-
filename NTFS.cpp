@@ -60,6 +60,21 @@ int NTFS::read$MFT() {
 	return num_clusters;
 }
 
+void NTFS::readEntry(int offsetMFT) {
+	int readed = 0;
+	this->MFT = new BYTE[_MFT_entry_size];
+	int i = 0;
+	while(readed < offsetMFT) {
+		int read = _MFT_entry_size - readed > 512 ? 512 : _MFT_entry_size - readed;
+		BYTE* lastEntry = new BYTE[read];
+		ReadSector(_drive_name, offsetMFT + readed, lastEntry);
+		memcpy(MFT + readed, lastEntry, read);
+		delete lastEntry;
+		i++;
+		readed += read;
+	}
+}
+
 void NTFS::read() {
 	system("cls");
 	std::cout << "======================" << std::endl;
@@ -69,15 +84,10 @@ void NTFS::read() {
 	int total_sector = read$MFT() * _bytes_per_sector * _sectors_per_cluster;
 	std::cout << total_sector << std::endl;
 	while (total_sector > 0) {
-		this->MFT = new BYTE[1024];
-		ReadSector(_drive_name, offsetMFT, MFT);
-		BYTE* lastEntry = new BYTE[512];
-		ReadSector(_drive_name, offsetMFT + 512, lastEntry);
-		memcpy(MFT + 512, lastEntry, 512);
-		delete lastEntry; 
+		readEntry(offsetMFT);
 		readMFTEntry();
-		offsetMFT += 1024;
-		total_sector -= 1024;
+		offsetMFT += _MFT_entry_size;
+		total_sector -= _MFT_entry_size;
 		if (MFT != nullptr)
 		{
 			delete[] MFT;
@@ -93,7 +103,7 @@ void NTFS::readMFTEntry() {
 	if (toString(MFT, 0, 4) != "FILE") return;
 	if (getByteValues(MFT, 0x10, 2) == 0) return;
 	FileEntry fileEntry;
-	fileEntry.parentReference = 5; 
+	fileEntry.parentReference = _root_reference; 
 	if (getByteValues(MFT, 0x16, 2) == 0x01) fileEntry.isDirectory = false;
 	else if (getByteValues(MFT, 0x16, 2) == 0x03) fileEntry.isDirectory = true;
 	else return;
@@ -150,7 +160,7 @@ void NTFS::readMFTEntry() {
 	if (_dir_list.size() == 0 || searchDir(0, _dir_list.size() - 1, fileEntry.parentReference) == -1) {
 		Directory dir;
 		dir.reference = fileEntry.parentReference;
-		_dir_list.push_back(dir);
+		addDir(dir);
 	}
 	int number = searchDir(0, _dir_list.size() - 1, fileEntry.parentReference);
 	_dir_list[number].children.push_back(fileEntry.fileReference);
@@ -159,11 +169,21 @@ void NTFS::readMFTEntry() {
 			if (searchDir(0, _dir_list.size() - 1, fileEntry.fileReference) == -1) {
 				Directory dir;
 				dir.reference = fileEntry.fileReference;
-				_dir_list.push_back(dir);
+				addDir(dir);
 				
 			}
 		}
 	}
+}
+
+void NTFS::addDir(Directory dir) {
+	for(int i = 0; i < _dir_list.size(); i++) {
+		if(_dir_list[i].reference > dir.reference) {
+			_dir_list.insert(i, dir);
+			return;
+		}
+	}
+	_dir_list.push_back(dir);
 }
 
 
