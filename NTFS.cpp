@@ -179,7 +179,7 @@ void NTFS::readMFTEntry() {
 void NTFS::addDir(Directory dir) {
 	for(int i = 0; i < _dir_list.size(); i++) {
 		if(_dir_list[i].reference > dir.reference) {
-			_dir_list.insert(i, dir);
+			_dir_list.insert(_dir_list.begin()+i, dir);
 			return;
 		}
 	}
