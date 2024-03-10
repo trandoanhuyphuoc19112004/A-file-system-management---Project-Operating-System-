@@ -170,6 +170,7 @@ void NTFS::readMFTEntry() {
 				Directory dir;
 				dir.reference = fileEntry.fileReference;
 				addDir(dir);
+				addDir(dir);
 				
 			}
 		}

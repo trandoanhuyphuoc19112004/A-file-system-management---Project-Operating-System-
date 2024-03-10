@@ -52,6 +52,8 @@ public:
 	void readEntry(int64_t offsetMFT);
 	void addDir(Directory dir);
 	int searchDir(int left, int right, int ref);
+	void addDir(Directory dir);
+	void readEntry(int offsetMFT);
 	void printDirectory(int rootreference);
 	void printChosen(std::vector<ItemProperties> List);
 };
